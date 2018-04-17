@@ -34,6 +34,7 @@ dependencies {
     // Support
     implementation "com.android.support:appcompat-v7:$supportLibraryVersion"
     implementation "com.android.support:design:$supportLibraryVersion"
+    implementation "com.android.support:cardview-v7:$supportLibraryVersion"
     implementation "com.android.support.constraint:constraint-layout:1.0.2"
 
     // Google
@@ -45,6 +46,7 @@ dependencies {
     // Firebase
     implementation "com.google.firebase:firebase-core:$firebaseVersion"
     implementation "com.google.firebase:firebase-database:$firebaseVersion"
+    implementation "com.google.firebase:firebase-storage:$firebaseVersion"
     implementation "com.google.firebase:firebase-auth:$firebaseVersion"
     implementation "com.google.firebase:firebase-config:$firebaseVersion"
     implementation "com.google.firebase:firebase-messaging:$firebaseVersion"

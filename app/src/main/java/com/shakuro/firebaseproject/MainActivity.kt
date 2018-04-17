@@ -11,6 +11,7 @@ import android.view.MenuItem
 import android.widget.Toast
 import com.firebase.ui.database.FirebaseRecyclerAdapter
 import com.firebase.ui.database.FirebaseRecyclerOptions
+import com.firebase.ui.database.SnapshotParser
 import com.google.android.gms.auth.api.Auth
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
@@ -19,6 +20,7 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.android.synthetic.main.activity_main.*
+
 
 class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedListener {
     companion object {
@@ -30,8 +32,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
     private var mPhotoUrl: String? = null
     private lateinit var mGoogleApiClient: GoogleApiClient
 
-    private lateinit var mSimpleFirechatDatabaseReference: DatabaseReference
-    private lateinit var mFirebaseAdapter: FirebaseRecyclerAdapter<FriendlyMessage, FirechatMsgViewHolder>
+    private lateinit var mFirebaseDatabaseReference: DatabaseReference
+    private lateinit var mFirebaseAdapter: FirebaseRecyclerAdapter<PostItem, FirechatMsgViewHolder>
     private lateinit var mLinearLayoutManager: LinearLayoutManager
 
     // Firebase instance variables
@@ -52,10 +54,23 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
         mLinearLayoutManager.stackFromEnd = true
         messageRecyclerView.layoutManager = mLinearLayoutManager
 
-        mSimpleFirechatDatabaseReference = FirebaseDatabase.getInstance().reference
+        mFirebaseDatabaseReference = FirebaseDatabase.getInstance().reference
+        val parser = SnapshotParser<PostItem> { dataSnapshot ->
+            var postItem = PostItem()
+            val postItemValue: PostItem?
+            postItemValue = dataSnapshot.getValue(PostItem::class.java)
+            if(postItemValue != null) {
+                postItem = postItemValue
+            }
+            postItem.id = dataSnapshot.key
+            postItem
+        }
 
-        val options = FirebaseRecyclerOptions.Builder<FriendlyMessage>()
-                .setQuery(mSimpleFirechatDatabaseReference.child("messages"), FriendlyMessage::class.java)
+//        val options = FirebaseRecyclerOptions.Builder<PostItem>()
+//                .setQuery(mFirebaseDatabaseReference.child("messages"), PostItem::class.java)
+//                .build()
+        val options = FirebaseRecyclerOptions.Builder<PostItem>()
+                .setQuery(mFirebaseDatabaseReference.child("posts"), parser)
                 .build()
 
         mFirebaseAdapter = ChatAdapter(this, options)
@@ -71,8 +86,17 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
             }
         })
 
-        messageRecyclerView.layoutManager = mLinearLayoutManager
         messageRecyclerView.adapter = mFirebaseAdapter
+    }
+
+    public override fun onPause() {
+        mFirebaseAdapter.stopListening()
+        super.onPause()
+    }
+
+    public override fun onResume() {
+        super.onResume()
+        mFirebaseAdapter.startListening()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

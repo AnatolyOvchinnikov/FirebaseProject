@@ -6,13 +6,13 @@ import android.widget.ImageView
 import android.widget.TextView
 
 class FirechatMsgViewHolder(v: View) : RecyclerView.ViewHolder(v) {
-    var msgTextView: TextView
-    var userTextView: TextView
-    var userImageView: ImageView
+    var postTitleTextView: TextView
+    var postDescriptionTextView: TextView
+    var postImageView: ImageView
 
     init {
-        msgTextView = itemView.findViewById(R.id.messageTextView) as TextView
-        userTextView = itemView.findViewById(R.id.userTextView) as TextView
-        userImageView = itemView.findViewById(R.id.userImageView) as ImageView
+        postTitleTextView = itemView.findViewById(R.id.postTitleTextView) as TextView
+        postDescriptionTextView = itemView.findViewById(R.id.postDescriptionTextView) as TextView
+        postImageView = itemView.findViewById(R.id.postImageView) as ImageView
     }
 }
