@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import android.util.Patterns
 import android.view.View
 import android.widget.Toast
 import com.google.android.gms.auth.api.Auth
@@ -11,9 +12,12 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.android.synthetic.main.activity_sign_in.*
+
 
 class SignInActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
     private val TAG = "SignInActivity"
@@ -30,6 +34,8 @@ class SignInActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLi
 
         // Set click listeners
         signInButton.setOnClickListener(this)
+        registerBtn.setOnClickListener(this)
+        loginBtn.setOnClickListener(this)
 
         // Configure Google Sign In
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -48,6 +54,8 @@ class SignInActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLi
     override fun onClick(v: View?) {
         when (v?.getId()) {
             R.id.signInButton -> signIn()
+            R.id.registerBtn -> createUser(loginEditText.text.toString(), passwordEditText.text.toString())
+            R.id.loginBtn -> signIn(loginEditText.text.toString(), passwordEditText.text.toString())
         }
     }
 
@@ -99,5 +107,59 @@ class SignInActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedLi
                         finish()
                     }
                 }
+    }
+
+    private fun createUser(email: String, password: String) {
+        if(isValidEmail(email)) {
+            mFirebaseAuth.createUserWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(this, OnCompleteListener<AuthResult> { task ->
+                        if (task.isSuccessful) {
+                            // Sign in success, update UI with the signed-in user's information
+                            Log.d(TAG, "createUserWithEmail:success")
+                            val user = mFirebaseAuth.getCurrentUser()
+                            startActivity(Intent(this@SignInActivity, MainActivity::class.java))
+                            finish()
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            Log.w(TAG, "createUserWithEmail:failure", task.exception)
+                            Toast.makeText(this@SignInActivity, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show()
+                        }
+                    })
+        } else {
+            Toast.makeText(this@SignInActivity, "Wrong email",
+                    Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun signIn(email: String, password: String) {
+        if(isValidEmail(email)) {
+            mFirebaseAuth.signInWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(this, OnCompleteListener<AuthResult> { task ->
+                        if (task.isSuccessful) {
+                            // Sign in success, update UI with the signed-in user's information
+                            Log.d(TAG, "signInWithEmail:success")
+                            val user = mFirebaseAuth.getCurrentUser()
+                            startActivity(Intent(this@SignInActivity, MainActivity::class.java))
+                            finish()
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            Log.w(TAG, "signInWithEmail:failure", task.exception)
+                            Toast.makeText(this@SignInActivity, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show()
+                        }
+                    })
+        } else {
+            Toast.makeText(this@SignInActivity, "Wrong email",
+                    Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun isValidEmail(target: CharSequence?): Boolean {
+        return if (target == null) {
+            false
+        } else {
+            Patterns.EMAIL_ADDRESS.matcher(target).matches()
+        }
     }
 }
