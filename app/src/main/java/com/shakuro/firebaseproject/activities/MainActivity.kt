@@ -1,8 +1,7 @@
-package com.shakuro.firebaseproject
+package com.shakuro.firebaseproject.activities
 
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
@@ -19,10 +18,15 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.shakuro.firebaseproject.Constants
+import com.shakuro.firebaseproject.R
+import com.shakuro.firebaseproject.entity.PostItem
+import com.shakuro.firebaseproject.lists.ChatAdapter
+import com.shakuro.firebaseproject.lists.cells.FirechatMsgViewHolder
 import kotlinx.android.synthetic.main.activity_main.*
 
 
-class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedListener {
+class MainActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListener {
     companion object {
         const val ANONYMOUS = "anonymous"
     }
@@ -56,21 +60,17 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedList
 
         mFirebaseDatabaseReference = FirebaseDatabase.getInstance().reference
         val parser = SnapshotParser<PostItem> { dataSnapshot ->
-            var postItem = PostItem()
-            val postItemValue: PostItem?
-            postItemValue = dataSnapshot.getValue(PostItem::class.java)
-            if(postItemValue != null) {
-                postItem = postItemValue
+            val postItem = dataSnapshot.getValue(PostItem::class.java)
+            if(postItem != null) {
+                postItem.id = dataSnapshot.key
+                postItem
+            } else {
+                PostItem(dataSnapshot.key)
             }
-            postItem.id = dataSnapshot.key
-            postItem
         }
 
-//        val options = FirebaseRecyclerOptions.Builder<PostItem>()
-//                .setQuery(mFirebaseDatabaseReference.child("messages"), PostItem::class.java)
-//                .build()
         val options = FirebaseRecyclerOptions.Builder<PostItem>()
-                .setQuery(mFirebaseDatabaseReference.child("posts"), parser)
+                .setQuery(mFirebaseDatabaseReference.child(Constants.POSTS_CHILD), parser)
                 .build()
 
         mFirebaseAdapter = ChatAdapter(this, options)

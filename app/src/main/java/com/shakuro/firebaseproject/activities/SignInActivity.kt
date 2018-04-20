@@ -1,8 +1,7 @@
-package com.shakuro.firebaseproject
+package com.shakuro.firebaseproject.activities
 
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.util.Patterns
 import android.view.View
@@ -16,10 +15,11 @@ import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.shakuro.firebaseproject.R
 import kotlinx.android.synthetic.main.activity_sign_in.*
 
 
-class SignInActivity : AppCompatActivity(), GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
+class SignInActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
     private val TAG = "SignInActivity"
     private val RC_SIGN_IN = 9001
 

@@ -1,4 +1,4 @@
-package com.shakuro.firebaseproject
+package com.shakuro.firebaseproject.lists
 
 import android.content.Context
 import android.support.v4.content.ContextCompat
@@ -9,6 +9,9 @@ import com.bumptech.glide.Glide
 import com.firebase.ui.database.FirebaseRecyclerAdapter
 import com.firebase.ui.database.FirebaseRecyclerOptions
 import com.google.firebase.storage.FirebaseStorage
+import com.shakuro.firebaseproject.R
+import com.shakuro.firebaseproject.entity.PostItem
+import com.shakuro.firebaseproject.lists.cells.FirechatMsgViewHolder
 
 
 class ChatAdapter(val context: Context, options: FirebaseRecyclerOptions<PostItem>) : FirebaseRecyclerAdapter<PostItem, FirechatMsgViewHolder>(options) {
@@ -20,6 +23,7 @@ class ChatAdapter(val context: Context, options: FirebaseRecyclerOptions<PostIte
     }
 
     override fun onBindViewHolder(holder: FirechatMsgViewHolder, position: Int, model: PostItem) {
+        model.id?.let { holder.id = it }
         holder.postTitleTextView.setText(model.title)
         holder.postDescriptionTextView.setText(model.description)
 
