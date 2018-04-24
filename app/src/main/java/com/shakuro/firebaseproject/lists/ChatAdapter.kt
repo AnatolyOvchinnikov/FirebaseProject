@@ -2,8 +2,10 @@ package com.shakuro.firebaseproject.lists
 
 import android.content.Context
 import android.support.v4.content.ContextCompat
+import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import com.bumptech.glide.Glide
 import com.firebase.ui.database.FirebaseRecyclerAdapter
@@ -11,10 +13,11 @@ import com.firebase.ui.database.FirebaseRecyclerOptions
 import com.google.firebase.storage.FirebaseStorage
 import com.shakuro.firebaseproject.R
 import com.shakuro.firebaseproject.entity.PostItem
-import com.shakuro.firebaseproject.lists.cells.FirechatMsgViewHolder
+import kotlinx.android.synthetic.main.post_item_layout.view.*
 
 
-class ChatAdapter(val context: Context, options: FirebaseRecyclerOptions<PostItem>) : FirebaseRecyclerAdapter<PostItem, FirechatMsgViewHolder>(options) {
+class ChatAdapter(val context: Context, options: FirebaseRecyclerOptions<PostItem>,
+                  private val onCellClick: (PostItem) -> Unit) : FirebaseRecyclerAdapter<PostItem, ChatAdapter.FirechatMsgViewHolder>(options) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FirechatMsgViewHolder {
         val view = LayoutInflater.from(parent.context)
                 .inflate(R.layout.post_item_layout, parent, false)
@@ -22,34 +25,46 @@ class ChatAdapter(val context: Context, options: FirebaseRecyclerOptions<PostIte
         return FirechatMsgViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: FirechatMsgViewHolder, position: Int, model: PostItem) {
-        model.id?.let { holder.id = it }
-        holder.postTitleTextView.setText(model.title)
-        holder.postDescriptionTextView.setText(model.description)
+    override fun onBindViewHolder(holder: FirechatMsgViewHolder, position: Int, model: PostItem) = holder.bind(model)
 
-        val imageUrl = model.photoUrl
-        if (imageUrl == null) {
-            holder.postImageView
-                    .setImageDrawable(ContextCompat
-                            .getDrawable(context,
-                                    R.mipmap.ic_launcher))
-        } else if (imageUrl.startsWith("gs://") == true) {
-            val storageReference = FirebaseStorage.getInstance().getReferenceFromUrl(imageUrl)
-            storageReference.getDownloadUrl().addOnCompleteListener {
-                if (it.isSuccessful()) {
-                    val downloadUrl = it.getResult().toString()
-                    Glide.with(holder.postImageView.getContext())
-                            .load(downloadUrl)
-                            .into(holder.postImageView)
-                } else {
-                    Log.w(this.javaClass.simpleName, "Getting download url was not successful.",
-                            it.getException())
-                }
+    inner class FirechatMsgViewHolder(v: View) : RecyclerView.ViewHolder(v) {
+        lateinit var item: PostItem
+
+        init {
+            itemView.setOnClickListener {
+                onCellClick(item)
             }
-        } else {
-            Glide.with(context)
-                    .load(imageUrl)
-                    .into(holder.postImageView)
+        }
+
+        fun bind(postItem: PostItem) {
+            item = postItem
+            itemView.postTitleTextView.setText(postItem.title)
+            itemView.postDescriptionTextView.setText(postItem.description)
+
+            val imageUrl = postItem.photoUrl
+            if (imageUrl == null) {
+                itemView.postImageView
+                        .setImageDrawable(ContextCompat
+                                .getDrawable(context,
+                                        R.mipmap.ic_launcher))
+            } else if (imageUrl.startsWith("gs://") == true) {
+                val storageReference = FirebaseStorage.getInstance().getReferenceFromUrl(imageUrl)
+                storageReference.getDownloadUrl().addOnCompleteListener {
+                    if (it.isSuccessful()) {
+                        val downloadUrl = it.getResult().toString()
+                        Glide.with(itemView.postImageView.getContext())
+                                .load(downloadUrl)
+                                .into(itemView.postImageView)
+                    } else {
+                        Log.w(this.javaClass.simpleName, "Getting download url was not successful.",
+                                it.getException())
+                    }
+                }
+            } else {
+                Glide.with(context)
+                        .load(imageUrl)
+                        .into(itemView.postImageView)
+            }
         }
     }
 }

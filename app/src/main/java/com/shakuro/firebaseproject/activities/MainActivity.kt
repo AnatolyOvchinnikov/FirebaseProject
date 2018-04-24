@@ -22,7 +22,6 @@ import com.shakuro.firebaseproject.Constants
 import com.shakuro.firebaseproject.R
 import com.shakuro.firebaseproject.entity.PostItem
 import com.shakuro.firebaseproject.lists.ChatAdapter
-import com.shakuro.firebaseproject.lists.cells.FirechatMsgViewHolder
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -37,7 +36,7 @@ class MainActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListener 
     private lateinit var mGoogleApiClient: GoogleApiClient
 
     private lateinit var mFirebaseDatabaseReference: DatabaseReference
-    private lateinit var mFirebaseAdapter: FirebaseRecyclerAdapter<PostItem, FirechatMsgViewHolder>
+    private lateinit var mFirebaseAdapter: FirebaseRecyclerAdapter<PostItem, ChatAdapter.FirechatMsgViewHolder>
     private lateinit var mLinearLayoutManager: LinearLayoutManager
 
     // Firebase instance variables
@@ -73,7 +72,12 @@ class MainActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListener 
                 .setQuery(mFirebaseDatabaseReference.child(Constants.POSTS_CHILD), parser)
                 .build()
 
-        mFirebaseAdapter = ChatAdapter(this, options)
+        mFirebaseAdapter = ChatAdapter(this, options, {
+            startActivity(Intent(this,
+                        PostDetailsActivity::class.java).apply {
+                    putExtra(PostDetailsActivity.POST_OBJECT, it)
+                })
+        })
 
         mFirebaseAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
             override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
