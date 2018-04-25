@@ -1,6 +1,8 @@
 package com.shakuro.firebaseproject.activities
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.ResultReceiver
 import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
@@ -38,7 +40,19 @@ class PostDetailsActivity : BaseActivity() {
         setContentView(R.layout.post_details_layout)
 
         val postItem : PostItem = intent.getSerializableExtra(POST_OBJECT) as PostItem
-        commentSendBtn.setOnClickListener { postItem.id?.let { sendComment(it) } }
+        commentSendBtn.setOnClickListener {
+            postItem.id?.let {
+                hideKeyboard(object : ResultReceiver(Handler()) {
+                    override fun onReceiveResult(resultCode: Int, resultData: Bundle?) {
+                        super.onReceiveResult(resultCode, resultData)
+                        val handler = Handler()
+                        handler.postDelayed({
+                            sendComment(it)
+                        }, 100)
+                    }
+                })
+            }
+        }
 
         initAdapter(postItem)
     }
@@ -73,24 +87,7 @@ class PostDetailsActivity : BaseActivity() {
                 .setQuery(mFirebaseDatabaseReference.child(Constants.COMMENTS_CHILD).child(postItem.id), parser)
                 .build()
 
-
-        // Alternative of Firebase adapter
-//        val response = mFirebaseDatabaseReference.child(Constants.COMMENTS_CHILD).child(postItem.id)
-//
-//        response.addListenerForSingleValueEvent(object : ValueEventListener {
-//            override fun onCancelled(p0: DatabaseError?) {
-//                val a = 10
-//                val b = a
-//            }
-//
-//            override fun onDataChange(p0: DataSnapshot?) {
-//                val a = 10
-//                val b = a
-//            }
-//
-//        })
-
-        mFirebaseAdapter = PostDetailsAdapter(this, options, postItem)
+        mFirebaseAdapter = PostDetailsAdapter(this, options)
 
         mFirebaseAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
             override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
