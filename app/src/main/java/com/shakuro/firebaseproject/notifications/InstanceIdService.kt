@@ -1,9 +1,10 @@
 package com.shakuro.firebaseproject.notifications
 
 import android.util.Log
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.iid.FirebaseInstanceId
 import com.google.firebase.iid.FirebaseInstanceIdService
-import com.google.firebase.messaging.FirebaseMessaging
 
 
 
@@ -20,9 +21,15 @@ class InstanceIdService : FirebaseInstanceIdService() {
         // after a refresh this is where you should do that.
         val token = FirebaseInstanceId.getInstance().token
         Log.d(TAG, "FCM Token: " + token!!)
+        sendRegistrationToServer(token)
 
         // Once a token is generated, we subscribe to topic.
-        FirebaseMessaging.getInstance()
-                .subscribeToTopic(FRIENDLY_ENGAGE_TOPIC)
+//        FirebaseMessaging.getInstance()
+//                .subscribeToTopic(FRIENDLY_ENGAGE_TOPIC)
+    }
+
+    private fun sendRegistrationToServer(token: String) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        FirebaseDatabase.getInstance().reference.child("users/${userId}/tokens").child(token).setValue(true)
     }
 }

@@ -1,6 +1,7 @@
 package com.shakuro.firebaseproject.activities
 
 import android.content.Intent
+import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
 import android.util.Patterns
@@ -15,8 +16,10 @@ import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.iid.FirebaseInstanceId
 import com.shakuro.firebaseproject.R
 import kotlinx.android.synthetic.main.activity_sign_in.*
+import java.io.IOException
 
 
 class SignInActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
@@ -103,8 +106,7 @@ class SignInActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListene
                         Toast.makeText(this@SignInActivity, "Authentication failed.",
                                 Toast.LENGTH_SHORT).show()
                     } else {
-                        startActivity(Intent(this@SignInActivity, MainActivity::class.java))
-                        finish()
+                        authSuccess()
                     }
                 }
     }
@@ -117,8 +119,7 @@ class SignInActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListene
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "createUserWithEmail:success")
                             val user = mFirebaseAuth.getCurrentUser()
-                            startActivity(Intent(this@SignInActivity, MainActivity::class.java))
-                            finish()
+                            authSuccess()
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "createUserWithEmail:failure", task.exception)
@@ -140,8 +141,7 @@ class SignInActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListene
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithEmail:success")
                             val user = mFirebaseAuth.getCurrentUser()
-                            startActivity(Intent(this@SignInActivity, MainActivity::class.java))
-                            finish()
+                            authSuccess()
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithEmail:failure", task.exception)
@@ -153,6 +153,24 @@ class SignInActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListene
             Toast.makeText(this@SignInActivity, "Wrong email",
                     Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun authSuccess() {
+        AsyncTask.execute {
+            try {
+                // Resets Instance ID and revokes all tokens.
+                FirebaseInstanceId.getInstance().deleteInstanceId()
+
+                // Now manually call onTokenRefresh()
+                Log.d(TAG, "Getting new token")
+                FirebaseInstanceId.getInstance().token
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+
+        }
+        startActivity(Intent(this@SignInActivity, MainActivity::class.java))
+        finish()
     }
 
     private fun isValidEmail(target: CharSequence?): Boolean {

@@ -6,24 +6,37 @@ const admin = require('firebase-admin');
 admin.initializeApp();
 
 // Sends a notifications to all users when a new message is posted.
-exports.sendNotifications = functions.database.ref('/messages/{postId}/{messageId}').onCreate(snapshot => {
+exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageId}').onCreate(snapshot => {
     // Notification details.
-    const text = snapshot.val().text;
-    const payload = {
+    const text = snapshot.val().message;
+    /*const payload = {
       notification: {
-        title: `${snapshot.val().name} posted ${text ? 'a message' : 'an image'}`,
+        title: `${snapshot.val().userName} posted ${text ? 'a message' : 'an image'}`,
         body: text ? (text.length <= 100 ? text : text.substring(0, 97) + '...') : '',
         icon: snapshot.val().photoUrl || '/images/profile_placeholder.png',
         click_action: `https://${process.env.GCLOUD_PROJECT}.firebaseapp.com`,
+      }
+    };*/
+
+    var payload = {
+      notification: {
+        title: "Super Bowl LI: Falcons vs. Patriots",
+        body: "Your team is Super Bowl bound! Get the inside scoop on the big game."
       }
     };
   
     let tokens = []; // All Device tokens to send a notification to.
     // Get the list of device tokens.
-    return admin.database().ref('fcmTokens').once('value').then(allTokens => {
+    console.log("Test 1111")
+    console.log('Test 2222')
+    console.log("Test 1 " + admin.database().ref('users/'+snapshot.val().userId+'/tokens'))
+    console.log("Test 2 " + admin.database().ref('users/'+snapshot.val().userId+'/tokens').once('value'))
+    return admin.database().ref('users/'+snapshot.val().userId+'/tokens').once('value').then(allTokens => {
+      console.log("Test 3 " + allTokens.val())
       if (allTokens.val()) {
         // Listing all tokens.
         tokens = Object.keys(allTokens.val());
+        console.log("Test 4 " + tokens)
   
         // Send notifications to all tokens.
         return admin.messaging().sendToDevice(tokens, payload);
