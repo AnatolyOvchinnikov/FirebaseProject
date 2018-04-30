@@ -18,11 +18,21 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
       }
     };*/
 
+    var fireTitle = `${snapshot.val().userName} posted ${text ? 'a message' : 'an image'}`
+    var fireBody = text ? (text.length <= 100 ? text : text.substring(0, 97) + '...') : ''
+    var fireJson = `{
+        "title" : "${fireTitle}",
+        "body" : "${fireBody}"
+    }`;
+
     var payload = {
-      notification: {
-        title: "Super Bowl LI: Falcons vs. Patriots",
-        body: "Your team is Super Bowl bound! Get the inside scoop on the big game."
-      }
+      /*notification: {
+        title: `${snapshot.val().userName} posted ${text ? 'a message' : 'an image'}`,
+        body: text ? (text.length <= 100 ? text : text.substring(0, 97) + '...') : ''
+      },*/
+      data: {
+        "firebase_data": fireJson
+     }
     };
   
     let tokens = []; // All Device tokens to send a notification to.
