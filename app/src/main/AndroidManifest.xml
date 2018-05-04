@@ -23,7 +23,7 @@
 
         <activity android:name=".activities.PostDetailsActivity"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustResize"/>
+            android:windowSoftInputMode="adjustPan"/>
 
         <service
             android:name=".notifications.MessagingService"

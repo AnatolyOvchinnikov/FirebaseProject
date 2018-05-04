@@ -37,16 +37,10 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
   
     let tokens = []; // All Device tokens to send a notification to.
     // Get the list of device tokens.
-    console.log("Test 1111")
-    console.log('Test 2222')
-    console.log("Test 1 " + admin.database().ref('users/'+snapshot.val().userId+'/tokens'))
-    console.log("Test 2 " + admin.database().ref('users/'+snapshot.val().userId+'/tokens').once('value'))
     return admin.database().ref('users/'+snapshot.val().userId+'/tokens').once('value').then(allTokens => {
-      console.log("Test 3 " + allTokens.val())
       if (allTokens.val()) {
         // Listing all tokens.
         tokens = Object.keys(allTokens.val());
-        console.log("Test 4 " + tokens)
   
         // Send notifications to all tokens.
         return admin.messaging().sendToDevice(tokens, payload);
@@ -62,7 +56,7 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
           // Cleanup the tokens who are not registered anymore.
           if (error.code === 'messaging/invalid-registration-token' ||
               error.code === 'messaging/registration-token-not-registered') {
-            tokensToRemove[`/fcmTokens/${tokens[index]}`] = null;
+            tokensToRemove[`users/${snapshot.val().userId}/tokens/${tokens[index]}`] = null;
           }
         }
       });

@@ -2,7 +2,6 @@ package com.shakuro.firebaseproject.activities
 
 import android.os.Bundle
 import android.os.Handler
-import android.os.ResultReceiver
 import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
@@ -42,15 +41,11 @@ class PostDetailsActivity : BaseActivity() {
         val postItem : PostItem = intent.getSerializableExtra(POST_OBJECT) as PostItem
         commentSendBtn.setOnClickListener {
             postItem.id?.let {
-                hideKeyboard(object : ResultReceiver(Handler()) {
-                    override fun onReceiveResult(resultCode: Int, resultData: Bundle?) {
-                        super.onReceiveResult(resultCode, resultData)
-                        val handler = Handler()
-                        handler.postDelayed({
-                            sendComment(it)
-                        }, 100)
-                    }
-                })
+                hideKeyboard()
+                val handler = Handler()
+                handler.postDelayed({
+                    sendComment(it)
+                }, 100)
             }
         }
 
