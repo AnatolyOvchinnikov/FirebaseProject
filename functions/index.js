@@ -62,6 +62,10 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
       });
       return admin.database().ref().update(tokensToRemove);
     }).then(() => {
+
+      var obj = {user_id: snapshot.val().userId};
+      admin.database().ref('comments/members').set(obj)
+
       console.log('Notifications have been sent and tokens cleaned up.');
       return null;
     });
