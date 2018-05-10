@@ -105,6 +105,7 @@ class PostDetailsActivity : BaseActivity() {
         FirebaseAuth.getInstance().currentUser?.let {
             val comment = CommentItem(
                     userId = it.uid,
+                    postId = postId,
                     message = commentFieldView.getText().toString(),
                     userName = it.email,
                     timestamp = ServerValue.TIMESTAMP)

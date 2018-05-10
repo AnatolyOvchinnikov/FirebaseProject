@@ -37,6 +37,22 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
   
     let tokens = []; // All Device tokens to send a notification to.
     // Get the list of device tokens.
+
+    /*
+    let members = [];
+    return admin.database().ref('members/'+snapshot.val().postId).once('value').then(allMembers => {
+      if (allMembers.val()) {
+        members = Object.keys(allMembers.val());
+        console.log('FirebaseTest ' + JSON.stringify(allMembers));
+        
+
+        return admin.database().ref('users/'+snapshot.val().userId+'/tokens').once('value')
+      }
+      return {results: []};
+    })
+    */
+    
+    
     return admin.database().ref('users/'+snapshot.val().userId+'/tokens').once('value').then(allTokens => {
       if (allTokens.val()) {
         // Listing all tokens.
@@ -64,7 +80,8 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
     }).then(() => {
 
       var obj = {user_id: snapshot.val().userId};
-      admin.database().ref('comments/members').set(obj)
+      admin.database().ref(`members/${snapshot.val().postId}`).set(obj)
+      //admin.database().ref(`members/${snapshot.val().postId}/${snapshot.val().userId}`).set(true)
 
       console.log('Notifications have been sent and tokens cleaned up.');
       return null;
