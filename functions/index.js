@@ -1,3 +1,5 @@
+//import { resolve } from 'dns';
+
 const functions = require('firebase-functions');
 
 // Берем модуль firebase-admin для доступа в базу данных Firebase Realtime Database
@@ -38,9 +40,9 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
     let tokens = []; // All Device tokens to send a notification to.
     // Get the list of device tokens.
 
-    /*
+    
     let members = [];
-    return admin.database().ref('members/'+snapshot.val().postId).once('value').then(allMembers => {
+    /*return admin.database().ref('members/'+snapshot.val().postId).once('value').then(allMembers => {
       if (allMembers.val()) {
         members = Object.keys(allMembers.val());
         console.log('FirebaseTest ' + JSON.stringify(allMembers));
@@ -49,8 +51,18 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
         return admin.database().ref('users/'+snapshot.val().userId+'/tokens').once('value')
       }
       return {results: []};
+    })*/
+    admin.database().ref('members/'+snapshot.val().postId).once('value').then(allMembers => {
+      if (allMembers.val()) {
+        members = Object.keys(allMembers.val());
+        let result = processArray(members).then(response => {
+          console.log('FirebaseTest 2 ' + JSON.stringify(response));
+        });
+        console.log('FirebaseTest ' + result);
+      }
     })
-    */
+    
+
     
     
     return admin.database().ref('users/'+snapshot.val().userId+'/tokens').once('value').then(allTokens => {
@@ -79,11 +91,60 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
       return admin.database().ref().update(tokensToRemove);
     }).then(() => {
 
-      var obj = {user_id: snapshot.val().userId};
-      admin.database().ref(`members/${snapshot.val().postId}`).set(obj)
-      //admin.database().ref(`members/${snapshot.val().postId}/${snapshot.val().userId}`).set(true)
+      //var obj = {user_id: snapshot.val().userId};
+      //admin.database().ref(`members/${snapshot.val().postId}`).set(obj)
+      admin.database().ref(`members/${snapshot.val().postId}/${snapshot.val().userId}`).set(true)
 
       console.log('Notifications have been sent and tokens cleaned up.');
       return null;
     });
   });
+
+  function processArray(array) {
+    let members = {};
+    let testArray = []
+    let testArrayPromise = []
+
+    //const promises = array.map
+    //let a = array.pop()
+    //console.log('FirebaseTest Promise 1 ' + JSON.stringify(admin.database().ref('users/'+a+'/tokens').once('value')));
+    //console.log('FirebaseTest Promise 2 ' + admin.database().ref('users/'+a+'/tokens').once('value'));
+    /*admin.database().ref('users/'+a+'/tokens').once('value').then(result => {
+      console.log('FirebaseTest 111 ' + JSON.stringify(result));
+    })*/
+
+    array.forEach(item => {
+      console.log('Promise item 1 ' + item)
+      testArray.push(processItem(item));
+      testArrayPromise.push(admin.database().ref('users/'+item+'/tokens').once('value'))
+      console.log('Promise item 2 ' + admin.database().ref('users/'+item+'/tokens').once('value'))
+      /*admin.database().ref('users/'+item+'/tokens').once('value').then(result => {
+        console.log('FirebaseTest 123 ' + JSON.stringify(result));
+      })*/
+    })
+    console.log('Promise array ' + testArray + ' length: ' + testArray.length)
+    
+
+    /*for(const item of array) {
+      admin.database().ref('users/'+item+'/tokens').once('value').then(result => {
+        members[item] = result
+      })
+    }*/
+    console.log('FirebaseTest Done');
+    
+    // return Promise.all(testArray)
+    return Promise.all(testArrayPromise)
+  }
+
+  //processArray([1]).then(res)
+
+  function processItem(item) {
+    return new Promise(resolve => {
+      admin.database().ref('users/'+item+'/tokens').once('value')
+      .then(response => resolve(response))
+      .catch(err => {
+        console.error(item, err);
+        resolve();
+      })
+    })
+  }
