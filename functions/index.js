@@ -1,14 +1,10 @@
-//import { resolve } from 'dns';
-
 const functions = require('firebase-functions');
-
-// Берем модуль firebase-admin для доступа в базу данных Firebase Realtime Database
 const admin = require('firebase-admin');
-// инициализируем приложение
+
 admin.initializeApp();
 
 // Sends a notifications to all users when a new message is posted.
-exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageId}').onCreate(snapshot => {
+exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageId}').onCreate((snapshot, context) => {
     // Notification details.
     const text = snapshot.val().message;
     /*const payload = {
@@ -39,37 +35,35 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
   
     let tokens = []; // All Device tokens to send a notification to.
     // Get the list of device tokens.
-
-    
     let members = [];
-    /*return admin.database().ref('members/'+snapshot.val().postId).once('value').then(allMembers => {
-      if (allMembers.val()) {
-        members = Object.keys(allMembers.val());
-        console.log('FirebaseTest ' + JSON.stringify(allMembers));
-        
 
-        return admin.database().ref('users/'+snapshot.val().userId+'/tokens').once('value')
-      }
-      return {results: []};
-    })*/
-    admin.database().ref('members/'+snapshot.val().postId).once('value').then(allMembers => {
+    return admin.database().ref('members/'+snapshot.val().postId).once('value').then(allMembers => {
       if (allMembers.val()) {
+        console.log("Test log 1 " + allMembers);
+        console.log("Test log 2 " + JSON.stringify(allMembers));
         members = Object.keys(allMembers.val());
-        let result = processArray(members).then(response => {
-          console.log('FirebaseTest 2 ' + JSON.stringify(response));
-        });
-        console.log('FirebaseTest ' + result);
-      }
-    })
-    
 
-    
-    
-    return admin.database().ref('users/'+snapshot.val().userId+'/tokens').once('value').then(allTokens => {
-      if (allTokens.val()) {
-        // Listing all tokens.
-        tokens = Object.keys(allTokens.val());
-  
+        console.log("Test log 3 " + members);
+        console.log("Test log 4 " + JSON.stringify(members));
+
+        let result = processArray(members, context);
+        return result
+      }
+    }).then(allTokens => {
+      allTokens.forEach(item => {
+        let tempArray = Object.keys(item.val())
+
+        tempArray.forEach(item1 => {
+          tokens.push(item1)
+        })
+      })
+
+      // display all values
+      for (var i = 0; i < tokens.length; i++) {
+        console.log(tokens[i]);
+      }
+
+      if (tokens != null) {
         // Send notifications to all tokens.
         return admin.messaging().sendToDevice(tokens, payload);
       }
@@ -85,14 +79,13 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
           if (error.code === 'messaging/invalid-registration-token' ||
               error.code === 'messaging/registration-token-not-registered') {
             tokensToRemove[`users/${snapshot.val().userId}/tokens/${tokens[index]}`] = null;
+
           }
         }
       });
       return admin.database().ref().update(tokensToRemove);
     }).then(() => {
 
-      //var obj = {user_id: snapshot.val().userId};
-      //admin.database().ref(`members/${snapshot.val().postId}`).set(obj)
       admin.database().ref(`members/${snapshot.val().postId}/${snapshot.val().userId}`).set(true)
 
       console.log('Notifications have been sent and tokens cleaned up.');
@@ -100,48 +93,29 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
     });
   });
 
-  function processArray(array) {
-    let members = {};
-    let testArray = []
-    let testArrayPromise = []
+  function processArray(array, context) {
+    let members = [];
 
-    //const promises = array.map
-    //let a = array.pop()
-    //console.log('FirebaseTest Promise 1 ' + JSON.stringify(admin.database().ref('users/'+a+'/tokens').once('value')));
-    //console.log('FirebaseTest Promise 2 ' + admin.database().ref('users/'+a+'/tokens').once('value'));
-    /*admin.database().ref('users/'+a+'/tokens').once('value').then(result => {
-      console.log('FirebaseTest 111 ' + JSON.stringify(result));
-    })*/
+    /*let index = array.indexOf(context.auth.uid);
+    if (index > -1) {
+      array.splice(index, 1)
+    }*/
 
     array.forEach(item => {
-      console.log('Promise item 1 ' + item)
-      testArray.push(processItem(item));
-      testArrayPromise.push(admin.database().ref('users/'+item+'/tokens').once('value'))
-      console.log('Promise item 2 ' + admin.database().ref('users/'+item+'/tokens').once('value'))
-      /*admin.database().ref('users/'+item+'/tokens').once('value').then(result => {
-        console.log('FirebaseTest 123 ' + JSON.stringify(result));
-      })*/
+      members.push(processItem(item));
     })
-    console.log('Promise array ' + testArray + ' length: ' + testArray.length)
-    
 
-    /*for(const item of array) {
-      admin.database().ref('users/'+item+'/tokens').once('value').then(result => {
-        members[item] = result
-      })
-    }*/
-    console.log('FirebaseTest Done');
-    
-    // return Promise.all(testArray)
-    return Promise.all(testArrayPromise)
+    return Promise.all(members)
   }
-
-  //processArray([1]).then(res)
 
   function processItem(item) {
     return new Promise(resolve => {
       admin.database().ref('users/'+item+'/tokens').once('value')
-      .then(response => resolve(response))
+      .then(response => {
+        console.log("Process " + JSON.stringify(response));
+        resolve(response)
+      }
+        )
       .catch(err => {
         console.error(item, err);
         resolve();
