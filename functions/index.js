@@ -6,6 +6,7 @@ admin.initializeApp();
 // Sends a notifications to all users when a new message is posted.
 exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageId}').onCreate((snapshot, context) => {
     // Notification details.
+    // console.log(`Snapshot : ${JSON.stringify(snapshot)}`)
     const text = snapshot.val().message;
     /*const payload = {
       notification: {
@@ -39,12 +40,7 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
 
     return admin.database().ref('members/'+snapshot.val().postId).once('value').then(allMembers => {
       if (allMembers.val()) {
-        console.log("Test log 1 " + allMembers);
-        console.log("Test log 2 " + JSON.stringify(allMembers));
         members = Object.keys(allMembers.val());
-
-        console.log("Test log 3 " + members);
-        console.log("Test log 4 " + JSON.stringify(members));
 
         let result = processArray(members, context);
         return result
@@ -58,10 +54,10 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
         })
       })
 
-      // display all values
+      /*// display all values
       for (var i = 0; i < tokens.length; i++) {
         console.log(tokens[i]);
-      }
+      }*/
 
       if (tokens != null) {
         // Send notifications to all tokens.
@@ -79,6 +75,65 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
           if (error.code === 'messaging/invalid-registration-token' ||
               error.code === 'messaging/registration-token-not-registered') {
             tokensToRemove[`users/${snapshot.val().userId}/tokens/${tokens[index]}`] = null;
+
+            /*admin.database().ref('users/').once('value').then(iter => {
+              console.log(`Iter ${iter}`)
+              console.log(`Iter pretty ${JSON.stringify(iter)}`)
+            })
+
+            admin.database().ref('users/').equalTo("valueme").once('value').then(snapshot => {
+              snapshot.forEach(child => {
+                const post = child.val();
+                post.id = child.key;
+
+                console.log("Test " + post.id)
+              })
+            })*/
+
+            /*dmin.database().ref('/comments/One/').orderByChild("email").equalTo('mail2@mail.com').on('value', function(snapshot) {
+              //snapshot would have list of NODES that satisfies the condition
+              console.log(snapshot.val())
+              console.log('-----------');
+
+            //go through each item found and print out the emails
+            snapshot.forEach(function(childSnapshot) {
+
+            var key = childSnapshot.key;
+            var childData = childSnapshot.val();
+
+              //this will be the actual email value found
+              console.log(childData.email);
+            });
+
+            })*/
+
+
+            admin.database().ref().child('asdf').once('value').then(snapshot => {
+              console.log(snapshot.val())
+              console.log(`Snapshot : ${JSON.stringify(snapshot)}`)
+              console.log('-----------');
+            })
+
+/*
+            admin.database().ref('/users/').orderByPriority().equalTo("ezLy-82iAR4:APA91bEMAbM8fLbSEPMsP39bCr9PCrB1djfsC0rzRPIUtPAGyMHvccEg-dpfldOCXvB711U_6KCJiVjhsVfrBXaUpNgFpqEfFCVp637sLVi9G1Y-5kgr2yeVVtAgF9vlY3wpxTmhF6GR").on('value', function(snapshot) {
+              //snapshot would have list of NODES that satisfies the condition
+              console.log(snapshot.val())
+              console.log(`Snapshot : ${JSON.stringify(snapshot)}`)
+              console.log('-----------');
+
+            //go through each item found and print out the emails
+            snapshot.forEach(function(childSnapshot) {
+
+            var key = childSnapshot.key;
+            var childData = childSnapshot.val();
+
+              //this will be the actual email value found
+              console.log(childData.email);
+            });
+
+            })*/
+
+            
 
           }
         }
@@ -112,7 +167,7 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
     return new Promise(resolve => {
       admin.database().ref('users/'+item+'/tokens').once('value')
       .then(response => {
-        console.log("Process " + JSON.stringify(response));
+        // console.log("Process " + JSON.stringify(response));
         resolve(response)
       }
         )
