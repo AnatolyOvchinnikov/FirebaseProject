@@ -38,6 +38,17 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
     // Get the list of device tokens.
     let members = [];
 
+
+
+    admin.database().ref("tokenA").once("value").then(snapshot => {
+        console.log(`Snapshot key : ${snapshot.key}`)
+        console.log(`Snapshot val : ${snapshot.val()}`)
+        console.log(`Snapshot val pr : ${JSON.stringify(snapshot.val())}`)
+        console.log(`Snapshot : ${JSON.stringify(snapshot)}`)
+        console.log('-----------');
+      })
+
+
     return admin.database().ref('members/'+snapshot.val().postId).once('value').then(allMembers => {
       if (allMembers.val()) {
         members = Object.keys(allMembers.val());
@@ -46,7 +57,16 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
         return result
       }
     }).then(allTokens => {
+
+      // console.log(`Snapshot key : ${allTokens.key}`)
+      // console.log(`Snapshot val : ${allTokens.val()}`)
+      // console.log(`Snapshot val pr : ${JSON.stringify(allTokens.val())}`)
+      // console.log(`Snapshot : ${JSON.stringify(allTokens)}`)
+
       allTokens.forEach(item => {
+        console.log(`Test ${item}`)
+        console.log(`Test ${JSON.stringify(item)}`)
+        console.log(`Key ${item.tokens}`)
         let tempArray = Object.keys(item.val())
 
         tempArray.forEach(item1 => {
@@ -76,6 +96,7 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
               error.code === 'messaging/registration-token-not-registered') {
             tokensToRemove[`users/${snapshot.val().userId}/tokens/${tokens[index]}`] = null;
 
+            
             /*admin.database().ref('users/').once('value').then(iter => {
               console.log(`Iter ${iter}`)
               console.log(`Iter pretty ${JSON.stringify(iter)}`)
@@ -108,11 +129,7 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
             })*/
 
 
-            admin.database().ref().child('asdf').once('value').then(snapshot => {
-              console.log(snapshot.val())
-              console.log(`Snapshot : ${JSON.stringify(snapshot)}`)
-              console.log('-----------');
-            })
+            
 
 /*
             admin.database().ref('/users/').orderByPriority().equalTo("ezLy-82iAR4:APA91bEMAbM8fLbSEPMsP39bCr9PCrB1djfsC0rzRPIUtPAGyMHvccEg-dpfldOCXvB711U_6KCJiVjhsVfrBXaUpNgFpqEfFCVp637sLVi9G1Y-5kgr2yeVVtAgF9vlY3wpxTmhF6GR").on('value', function(snapshot) {
@@ -138,6 +155,15 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
           }
         }
       });
+      
+      /*admin.database().ref("tokenA").once("value").then(snapshot => {
+        console.log(`Snapshot key : ${snapshot.key}`)
+        console.log(`Snapshot val : ${snapshot.val()}`)
+        console.log(`Snapshot val pr : ${JSON.stringify(snapshot.val())}`)
+        console.log(`Snapshot : ${JSON.stringify(snapshot)}`)
+        console.log('-----------');
+      })*/
+
       return admin.database().ref().update(tokensToRemove);
     }).then(() => {
 
@@ -163,16 +189,16 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
     return Promise.all(members)
   }
 
-  function processItem(item) {
+  function processItem(userId) {
     return new Promise(resolve => {
-      admin.database().ref('users/'+item+'/tokens').once('value')
+      admin.database().ref('users/'+userId+'/tokens').once('value')
       .then(response => {
         // console.log("Process " + JSON.stringify(response));
-        resolve(response)
+        resolve({ userId: userId, tokens: Object.keys(response.val())})
       }
         )
       .catch(err => {
-        console.error(item, err);
+        console.error(userId, err);
         resolve();
       })
     })
