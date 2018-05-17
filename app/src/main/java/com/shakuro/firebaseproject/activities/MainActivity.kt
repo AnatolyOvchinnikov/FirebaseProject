@@ -16,13 +16,13 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.*
 import com.shakuro.firebaseproject.Constants
 import com.shakuro.firebaseproject.R
 import com.shakuro.firebaseproject.entity.PostItem
 import com.shakuro.firebaseproject.lists.ChatAdapter
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.*
 
 
 class MainActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListener {
@@ -58,6 +58,7 @@ class MainActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListener 
         messageRecyclerView.layoutManager = mLinearLayoutManager
 
         mFirebaseDatabaseReference = FirebaseDatabase.getInstance().reference
+        // test()
         val parser = SnapshotParser<PostItem> { dataSnapshot ->
             val postItem = dataSnapshot.getValue(PostItem::class.java)
             if(postItem != null) {
@@ -91,6 +92,48 @@ class MainActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListener 
         })
 
         messageRecyclerView.adapter = mFirebaseAdapter
+    }
+
+    private fun test() {
+        mFirebaseDatabaseReference.child("members").child("2").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError?) {
+
+            }
+
+            override fun onDataChange(p0: DataSnapshot?) {
+                val map : HashMap<String, String> = p0?.value as HashMap<String, String>
+                val keys = map.keys
+                val tokens : ArrayList<Any> = ArrayList<Any>()
+                val collection = hashMapOf<Any, Any>()
+                keys.forEach {
+                    mFirebaseDatabaseReference.child("users").child(it).child("tokens").addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onCancelled(p0: DatabaseError?) {
+
+                        }
+
+                        override fun onDataChange(p0: DataSnapshot?) {
+                            val iter = (p0?.value as HashMap<Any, Any>).keys
+                            tokens.addAll(iter)
+                            collection.put(it, iter)
+                            val zzz = collection.mapKeys {
+                                it.value.equals("tokenA")
+                            }
+                            var result: Any? = null
+                            collection.forEach {
+                                val r = (it.value as Iterable<String>).filter {
+                                    it.equals("tokenA")
+                                }
+                                if(r != null && r.size > 0) {
+                                    result = it
+                                }
+                            }
+                        }
+                    })
+                }
+
+            }
+
+        })
     }
 
     public override fun onPause() {

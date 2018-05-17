@@ -40,16 +40,20 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
 
 
 
-    admin.database().ref("tokenA").once("value").then(snapshot => {
+    /*admin.database().ref("tokenA").once("value").then(snapshot => {
         console.log(`Snapshot key : ${snapshot.key}`)
         console.log(`Snapshot val : ${snapshot.val()}`)
         console.log(`Snapshot val pr : ${JSON.stringify(snapshot.val())}`)
         console.log(`Snapshot : ${JSON.stringify(snapshot)}`)
         console.log('-----------');
-      })
+      })*/
 
 
     return admin.database().ref('members/'+snapshot.val().postId).once('value').then(allMembers => {
+      console.log(`Members : ${allMembers}`)
+      console.log(`Members val : ${allMembers.val()}`)
+      console.log(`Members str : ${JSON.stringify(allMembers)}`)
+      console.log(`Members str val : ${JSON.stringify(allMembers.val())}`)
       if (allMembers.val()) {
         members = Object.keys(allMembers.val());
 

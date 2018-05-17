@@ -30,6 +30,6 @@ class InstanceIdService : FirebaseInstanceIdService() {
 
     private fun sendRegistrationToServer(token: String) {
         val userId = FirebaseAuth.getInstance().currentUser?.uid
-        FirebaseDatabase.getInstance().reference.child("users/${userId}/tokens").child(token).setValue(true)
+        FirebaseDatabase.getInstance().reference.child("users/${userId}").child("fcm_token").setValue(token)
     }
 }
