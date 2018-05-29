@@ -162,6 +162,10 @@ class MainActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListener 
                 finish()
                 return true
             }
+            R.id.change_user_info -> {
+                startActivity(Intent(this, UserActivity::class.java))
+                return true
+            }
             else -> return super.onOptionsItemSelected(item)
         }
     }

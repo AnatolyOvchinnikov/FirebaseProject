@@ -3,4 +3,18 @@
     <string name="sign_out">Sign Out</string>
     <string name="sign_in">Sign In</string>
     <string name="sign_up">Sign Up</string>
+    <string name="change_user_info">Change your info</string>
+    <string name="your_name">Your Name</string>
+    <string name="apply">Apply</string>
+    <string name="edit_profile_choice_avatar_title">Choice image</string>
+    <string name="edit_profile_choice_avatar_from_camera">Camera</string>
+    <string name="edit_profile_choice_avatar_from_gallery">Gallery</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="permission_camera_rationale">Camera permission is needed to show the camera preview.</string>
+    <string name="permision_available_camera">Camera permission has been granted. Preview can now be opened.</string>
+    <string name="permissions_not_granted">Permissions were not granted.</string>
+    <string name="permission_read_external_storage_rationale">Read external storage permission is needed to show the photo gallery.</string>
+    <string name="permision_available_read_external_storage">Read external storage permission has been granted. Photo gallery can now be opened.</string>
+    <string name="camera_error_message">Camera error. Please, try again.</string>
 </resources>
