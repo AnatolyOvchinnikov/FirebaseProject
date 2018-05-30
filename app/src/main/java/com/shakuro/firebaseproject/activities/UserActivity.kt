@@ -16,20 +16,17 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.content.FileProvider
 import android.support.v7.app.AlertDialog
 import android.util.Log
-import android.view.View
 import android.widget.ArrayAdapter
+import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.UploadTask
 import com.shakuro.firebaseproject.BuildConfig
 import com.shakuro.firebaseproject.R
 import com.shakuro.firebaseproject.utils.ImageUtils
 import com.shakuro.firebaseproject.utils.PermissionUtil
 import com.shakuro.firebaseproject.utils.RealPathUtil
-import com.shakuro.firebaseproject.utils.ScreenUtils
 import kotlinx.android.synthetic.main.activity_user.*
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -51,7 +48,6 @@ class UserActivity : BaseActivity() {
     private lateinit var imageUri: Uri
     private lateinit var cameraFileCaptured: File
     private lateinit var avatarBitmap : Bitmap
-    private lateinit var testUri: Uri
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,63 +56,43 @@ class UserActivity : BaseActivity() {
 
         editProfileAvatar.setOnClickListener { initChoiceDialog() }
         applyButton.setOnClickListener {
-//            uploadToServer()
-            updateAuthPhoto()
+            uploadToServer()
         }
 
         choiceData = ArrayList()
         choiceData.add(getString(R.string.edit_profile_choice_avatar_from_camera))
         choiceData.add(getString(R.string.edit_profile_choice_avatar_from_gallery))
+
+        loadUserData()
+    }
+
+    private fun loadUserData() {
+        val photoUrl = FirebaseAuth.getInstance().currentUser?.photoUrl
+        Glide.with(this)
+        .load(photoUrl)
+        .into(editProfileAvatar);
+
+        editProfileName.setText(FirebaseAuth.getInstance().currentUser?.displayName)
     }
 
     private fun uploadToServer() {
         val baos: ByteArrayOutputStream = ByteArrayOutputStream()
         avatarBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
-        val data: ByteArray = baos.toByteArray();
+        val data: ByteArray = baos.toByteArray()
 
         val storageRef = FirebaseStorage.getInstance().getReference()
         val userId = FirebaseAuth.getInstance().currentUser?.uid;
-        val mountainsRef = storageRef.child("users/${userId}/images/avatar.jpg")
+
+        val mountainsRef = storageRef.child("users/${userId}/avatar.jpg")
         val uploadTask: UploadTask = mountainsRef.putBytes(data);
         uploadTask
                 .addOnFailureListener {
-                    val a = 10
-                    val b = a
+                    // Nothing
         }
                 .addOnSuccessListener {
-                    val a = 10
-                    val b = a
+                    val pr: UserProfileChangeRequest = UserProfileChangeRequest.Builder().setPhotoUri(it.downloadUrl).setDisplayName(editProfileName.text.toString()).build()
+                    FirebaseAuth.getInstance().currentUser?.updateProfile(pr)
                 }
-    }
-
-    private fun updateAuthPhoto() {
-        val ur = FirebaseAuth.getInstance().currentUser?.photoUrl
-        if(ur != null) {
-            var bitmap = ImageUtils.decodeSampledBitmapFromResource(this, ur)
-
-            var realPath: String? = null
-            // SDK < API11
-            if (Build.VERSION.SDK_INT < 11)
-                realPath = RealPathUtil.getRealPathFromURI_BelowAPI11(this, ur)
-            else if (Build.VERSION.SDK_INT < 19)
-                realPath = RealPathUtil.getRealPathFromURI_API11to18(this, ur)
-            else
-                realPath = RealPathUtil.getRealPathFromURI_API19(this, ur)// SDK > 19 (Android 4.4)
-            // SDK >= 11 && SDK < 19
-
-            if (realPath != null) {
-                bitmap = ImageUtils.getCorrectBitmapOrientation(bitmap, realPath)
-                avatarBitmap = bitmap
-                editProfileAvatar.setImageBitmap(getResizedAvatarBitmap(bitmap))
-            }
-        }
-
-
-
-
-
-        val pr: UserProfileChangeRequest = UserProfileChangeRequest.Builder().setPhotoUri(testUri).build()
-        FirebaseAuth.getInstance().currentUser?.updateProfile(pr)
     }
 
     @RequiresApi(Build.VERSION_CODES.M)
@@ -188,7 +164,7 @@ class UserActivity : BaseActivity() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == TAKE_PICTURE_FROM_CAMERA) {
             if (resultCode == Activity.RESULT_OK) {
                 val selectedImage = imageUri
@@ -199,8 +175,9 @@ class UserActivity : BaseActivity() {
                     if (cameraFileCaptured != null && cameraFileCaptured.path != null) {
                         val realPath = cameraFileCaptured.path
                         bitmap = ImageUtils.getCorrectBitmapOrientation(bitmap, realPath)
+                        bitmap = ImageUtils.getCroppedRectBitmap(bitmap)
                         avatarBitmap = bitmap
-                        editProfileAvatar.setImageBitmap(getResizedAvatarBitmap(bitmap))
+                        editProfileAvatar.setImageBitmap(bitmap)
                     }
 
 
@@ -217,8 +194,7 @@ class UserActivity : BaseActivity() {
         } else if (requestCode == TAKE_PICTURE_FROM_GALLERY) {
             if (resultCode == Activity.RESULT_OK) {
                 // Get the url from data
-                val selectedImageUri = data.data
-                testUri = data.data
+                val selectedImageUri = data?.data
                 if (null != selectedImageUri) {
                     try {
                         var bitmap = ImageUtils.decodeSampledBitmapFromResource(this, selectedImageUri)
@@ -235,8 +211,9 @@ class UserActivity : BaseActivity() {
 
                         if (realPath != null) {
                             bitmap = ImageUtils.getCorrectBitmapOrientation(bitmap, realPath)
+                            bitmap = ImageUtils.getCroppedRectBitmap(bitmap)
                             avatarBitmap = bitmap
-                            editProfileAvatar.setImageBitmap(getResizedAvatarBitmap(bitmap))
+                            editProfileAvatar.setImageBitmap(bitmap)
                         }
 
                     } catch (e: IOException) {
@@ -289,13 +266,6 @@ class UserActivity : BaseActivity() {
 
     }
 
-    private fun getResizedAvatarBitmap(bitmap: Bitmap): Bitmap {
-        val previewInDp = 100
-        val sizeInPx = ScreenUtils.convertDpToPixels(previewInDp.toFloat())
-
-        return Bitmap.createScaledBitmap(bitmap, sizeInPx, sizeInPx, true)
-    }
-
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>,
                                             grantResults: IntArray) {
         if (requestCode == REQUEST_CAMERA) {
@@ -325,6 +295,4 @@ class UserActivity : BaseActivity() {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
     }
-
-
 }

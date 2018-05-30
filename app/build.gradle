@@ -56,6 +56,9 @@ dependencies {
     // Firebase UI
     compile 'com.firebaseui:firebase-ui-database:3.3.0'
 
+    // FirebaseUI Storage only
+    implementation 'com.firebaseui:firebase-ui-storage:0.6.0'
+
     compile 'com.makeramen:roundedimageview:2.2.1'
 
 
