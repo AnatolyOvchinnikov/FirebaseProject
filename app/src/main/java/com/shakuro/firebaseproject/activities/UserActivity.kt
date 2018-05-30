@@ -18,6 +18,12 @@ import android.support.v7.app.AlertDialog
 import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.UserProfileChangeRequest
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.UploadTask
 import com.shakuro.firebaseproject.BuildConfig
 import com.shakuro.firebaseproject.R
 import com.shakuro.firebaseproject.utils.ImageUtils
@@ -25,11 +31,12 @@ import com.shakuro.firebaseproject.utils.PermissionUtil
 import com.shakuro.firebaseproject.utils.RealPathUtil
 import com.shakuro.firebaseproject.utils.ScreenUtils
 import kotlinx.android.synthetic.main.activity_user.*
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
 import java.util.*
 
-class UserActivity : BaseActivity(), View.OnClickListener {
+class UserActivity : BaseActivity() {
 
     companion object {
         private const val REQUEST_CAMERA = 0
@@ -43,30 +50,73 @@ class UserActivity : BaseActivity(), View.OnClickListener {
 
     private lateinit var imageUri: Uri
     private lateinit var cameraFileCaptured: File
+    private lateinit var avatarBitmap : Bitmap
+    private lateinit var testUri: Uri
 
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_user)
 
-        editProfileAvatar.setOnClickListener(this)
-        applyButton.setOnClickListener(this)
+        editProfileAvatar.setOnClickListener { initChoiceDialog() }
+        applyButton.setOnClickListener {
+//            uploadToServer()
+            updateAuthPhoto()
+        }
 
         choiceData = ArrayList()
         choiceData.add(getString(R.string.edit_profile_choice_avatar_from_camera))
         choiceData.add(getString(R.string.edit_profile_choice_avatar_from_gallery))
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
-    override fun onClick(v: View?) {
-        when(v?.id) {
-            R.id.editProfileAvatar -> {
-                initChoiceDialog()
-            }
+    private fun uploadToServer() {
+        val baos: ByteArrayOutputStream = ByteArrayOutputStream()
+        avatarBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+        val data: ByteArray = baos.toByteArray();
 
-            R.id.applyButton -> {
+        val storageRef = FirebaseStorage.getInstance().getReference()
+        val userId = FirebaseAuth.getInstance().currentUser?.uid;
+        val mountainsRef = storageRef.child("users/${userId}/images/avatar.jpg")
+        val uploadTask: UploadTask = mountainsRef.putBytes(data);
+        uploadTask
+                .addOnFailureListener {
+                    val a = 10
+                    val b = a
+        }
+                .addOnSuccessListener {
+                    val a = 10
+                    val b = a
+                }
+    }
 
+    private fun updateAuthPhoto() {
+        val ur = FirebaseAuth.getInstance().currentUser?.photoUrl
+        if(ur != null) {
+            var bitmap = ImageUtils.decodeSampledBitmapFromResource(this, ur)
+
+            var realPath: String? = null
+            // SDK < API11
+            if (Build.VERSION.SDK_INT < 11)
+                realPath = RealPathUtil.getRealPathFromURI_BelowAPI11(this, ur)
+            else if (Build.VERSION.SDK_INT < 19)
+                realPath = RealPathUtil.getRealPathFromURI_API11to18(this, ur)
+            else
+                realPath = RealPathUtil.getRealPathFromURI_API19(this, ur)// SDK > 19 (Android 4.4)
+            // SDK >= 11 && SDK < 19
+
+            if (realPath != null) {
+                bitmap = ImageUtils.getCorrectBitmapOrientation(bitmap, realPath)
+                avatarBitmap = bitmap
+                editProfileAvatar.setImageBitmap(getResizedAvatarBitmap(bitmap))
             }
         }
+
+
+
+
+
+        val pr: UserProfileChangeRequest = UserProfileChangeRequest.Builder().setPhotoUri(testUri).build()
+        FirebaseAuth.getInstance().currentUser?.updateProfile(pr)
     }
 
     @RequiresApi(Build.VERSION_CODES.M)
@@ -149,6 +199,7 @@ class UserActivity : BaseActivity(), View.OnClickListener {
                     if (cameraFileCaptured != null && cameraFileCaptured.path != null) {
                         val realPath = cameraFileCaptured.path
                         bitmap = ImageUtils.getCorrectBitmapOrientation(bitmap, realPath)
+                        avatarBitmap = bitmap
                         editProfileAvatar.setImageBitmap(getResizedAvatarBitmap(bitmap))
                     }
 
@@ -167,6 +218,7 @@ class UserActivity : BaseActivity(), View.OnClickListener {
             if (resultCode == Activity.RESULT_OK) {
                 // Get the url from data
                 val selectedImageUri = data.data
+                testUri = data.data
                 if (null != selectedImageUri) {
                     try {
                         var bitmap = ImageUtils.decodeSampledBitmapFromResource(this, selectedImageUri)
@@ -183,6 +235,7 @@ class UserActivity : BaseActivity(), View.OnClickListener {
 
                         if (realPath != null) {
                             bitmap = ImageUtils.getCorrectBitmapOrientation(bitmap, realPath)
+                            avatarBitmap = bitmap
                             editProfileAvatar.setImageBitmap(getResizedAvatarBitmap(bitmap))
                         }
 
