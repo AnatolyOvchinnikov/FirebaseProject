@@ -52,6 +52,7 @@ dependencies {
     implementation "com.google.firebase:firebase-messaging:$firebaseVersion"
     implementation "com.google.firebase:firebase-appindexing:$firebaseVersion"
     implementation "com.google.firebase:firebase-crash:$firebaseVersion"
+    implementation "com.google.firebase:firebase-functions:$firebaseVersion"
 
     // Firebase UI
     compile 'com.firebaseui:firebase-ui-database:3.3.0'

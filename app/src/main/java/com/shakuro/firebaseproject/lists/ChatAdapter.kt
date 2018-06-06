@@ -16,8 +16,8 @@ import com.shakuro.firebaseproject.entity.PostItem
 import kotlinx.android.synthetic.main.post_item_layout.view.*
 
 
-class ChatAdapter(val context: Context, options: FirebaseRecyclerOptions<PostItem>,
-                  private val onCellClick: (PostItem) -> Unit) : FirebaseRecyclerAdapter<PostItem, ChatAdapter.FirechatMsgViewHolder>(options) {
+open class ChatAdapter(val context: Context, options: FirebaseRecyclerOptions<PostItem>,
+                       private val onCellClick: (PostItem) -> Unit) : FirebaseRecyclerAdapter<PostItem, ChatAdapter.FirechatMsgViewHolder>(options) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FirechatMsgViewHolder {
         val view = LayoutInflater.from(parent.context)
                 .inflate(R.layout.post_item_layout, parent, false)

@@ -113,6 +113,7 @@ class SignInActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListene
 
     private fun createUser(email: String, password: String) {
         if(isValidEmail(email)) {
+            showProgressDialog()
             mFirebaseAuth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener(this, OnCompleteListener<AuthResult> { task ->
                         if (task.isSuccessful) {
@@ -126,6 +127,7 @@ class SignInActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListene
                             Toast.makeText(this@SignInActivity, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show()
                         }
+                        hideProgressDialog()
                     })
         } else {
             Toast.makeText(this@SignInActivity, "Wrong email",
@@ -135,6 +137,7 @@ class SignInActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListene
 
     private fun signIn(email: String, password: String) {
         if(isValidEmail(email)) {
+            showProgressDialog()
             mFirebaseAuth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener(this, OnCompleteListener<AuthResult> { task ->
                         if (task.isSuccessful) {
@@ -148,6 +151,7 @@ class SignInActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListene
                             Toast.makeText(this@SignInActivity, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show()
                         }
+                        hideProgressDialog()
                     })
         } else {
             Toast.makeText(this@SignInActivity, "Wrong email",

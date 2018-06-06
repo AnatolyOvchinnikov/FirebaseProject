@@ -27,9 +27,9 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
     return admin.database().ref('members/'+snapshot.val().postId).once('value').then(allMembers => {
       if (allMembers.val()) {
         allMembers.forEach(function(childSnapshot) {
-          //if(childSnapshot.key != context.auth.uid) {
+          if(childSnapshot.key != context.auth.uid) {
             members.push(childSnapshot.val().fcm_token)
-          //}
+          }
         })
         console.log(`Array : ${JSON.stringify(members)}`)
 
@@ -58,4 +58,10 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
       console.log('Notifications have been sent.');
       return null;
     });
+  });
+
+  exports.testFunction = functions.https.onRequest((snapshot, context) => {
+    console.log("Test function called");
+    
+    return 10;
   });

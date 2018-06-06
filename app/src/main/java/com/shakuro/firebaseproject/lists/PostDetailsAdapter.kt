@@ -16,7 +16,7 @@ import com.shakuro.firebaseproject.extentions.timestampToDate
 import kotlinx.android.synthetic.main.comment_item_layout.view.*
 
 
-class PostDetailsAdapter(val context: Context, options: FirebaseRecyclerOptions<Any>) : FirebaseRecyclerAdapter<Any, RecyclerView.ViewHolder>(options) {
+open class PostDetailsAdapter(val context: Context, options: FirebaseRecyclerOptions<Any>) : FirebaseRecyclerAdapter<Any, RecyclerView.ViewHolder>(options) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val view = LayoutInflater.from(parent.context)
