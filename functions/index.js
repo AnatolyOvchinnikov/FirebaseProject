@@ -60,8 +60,25 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
     });
   });
 
-  exports.testFunction = functions.https.onRequest((snapshot, context) => {
-    console.log("Test function called");
+  exports.testFunction = functions.https.onRequest((req, res) => {
+    // console.log("Test function called");
+    // res.status(200).send(`{"title" : "test"}`)
+    /*let data = JSON.stringify({
+      message: 'OK',
+    });
+    res.status(200).type('application/json').send(data);*/
+
+    admin.database().ref(`users`).once('value').then(response => {
+      console.log(`Fire ${response.val()}`)
+      console.log(`Fire ${JSON.stringify(response.val())}`)
+      console.log(`Fire ${Object.keys(response.val())}`)
+      console.log(`Fire ${JSON.stringify(Object.keys(response.val()))}`)
+    })
     
-    return 10;
+    res.json({ data: {user: 'tj'} });
+    
+    
+    /*return admin.database().ref('users').once('value').then(response => {
+      res.status(200).send(response)
+    });*/
   });
