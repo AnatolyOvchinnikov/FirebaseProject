@@ -41,7 +41,7 @@ dependencies {
     compile "com.google.android.gms:play-services-auth:$firebaseVersion"
 
     // Image load and cache
-    implementation "com.github.bumptech.glide:glide:4.6.1"
+    implementation "com.github.bumptech.glide:glide:3.7.0"
 
     // Firebase
     implementation "com.google.firebase:firebase-core:$firebaseVersion"
@@ -52,6 +52,7 @@ dependencies {
     implementation "com.google.firebase:firebase-messaging:$firebaseVersion"
     implementation "com.google.firebase:firebase-appindexing:$firebaseVersion"
     implementation "com.google.firebase:firebase-crash:$firebaseVersion"
+    implementation "com.google.firebase:firebase-functions:$firebaseVersion"
 
     // Firebase UI
     compile 'com.firebaseui:firebase-ui-database:3.3.0'

@@ -17,6 +17,7 @@ import com.google.android.gms.common.api.GoogleApiClient
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
+import com.google.firebase.functions.FirebaseFunctions
 import com.shakuro.firebaseproject.Constants
 import com.shakuro.firebaseproject.R
 import com.shakuro.firebaseproject.entity.PostItem
@@ -28,6 +29,8 @@ import java.util.*
 class MainActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListener {
     companion object {
         const val ANONYMOUS = "anonymous"
+        const val LAUNCH_APP_BY_NOTIFICATION = "launch_app_by_notification"
+        const val NOTIFICATION_KEY = "notification_key"
     }
 
     private val TAG = "MainActivity"
@@ -73,12 +76,19 @@ class MainActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListener 
                 .setQuery(mFirebaseDatabaseReference.child(Constants.POSTS_CHILD), parser)
                 .build()
 
-        mFirebaseAdapter = ChatAdapter(this, options, {
+        mFirebaseAdapter = object : ChatAdapter(this, options, {
             startActivity(Intent(this,
                         PostDetailsActivity::class.java).apply {
                     putExtra(PostDetailsActivity.POST_OBJECT, it)
                 })
-        })
+        }) {
+            override fun onDataChanged() {
+                super.onDataChanged()
+                hideProgressDialog()
+            }
+        }
+
+        showProgressDialog()
 
         mFirebaseAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
             override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
@@ -92,6 +102,23 @@ class MainActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListener 
         })
 
         messageRecyclerView.adapter = mFirebaseAdapter
+
+        val launchAppByNotification = intent.getBooleanExtra(LAUNCH_APP_BY_NOTIFICATION, false)
+        if(launchAppByNotification) {
+            val key = intent.getStringExtra(NOTIFICATION_KEY)
+            if(key != null) {
+                sendToFirebase(key)
+            }
+        }
+    }
+
+    fun sendToFirebase(key: String) {
+        val user = FirebaseAuth.getInstance().currentUser
+        if(user != null) {
+            val mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference()
+            mFirebaseDatabaseReference.child("FCM").child(key).child("users").child(user.uid)
+                    .child("opened").setValue(true)
+        }
     }
 
     private fun test() {
@@ -166,8 +193,25 @@ class MainActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListener 
                 startActivity(Intent(this, UserActivity::class.java))
                 return true
             }
+            R.id.call_test_func -> {
+                callTestFunc()
+                return true
+            }
             else -> return super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun callTestFunc() {
+        FirebaseFunctions.getInstance().getHttpsCallable("testFunction")
+                .call()
+                .addOnFailureListener {
+                    val a = 10
+                    val b = a
+                }
+                .addOnSuccessListener {
+                    val a = 10
+                    val b = a
+                }
     }
 
     override fun onConnectionFailed(connectionResult: ConnectionResult) {

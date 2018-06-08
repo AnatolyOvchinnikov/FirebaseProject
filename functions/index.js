@@ -27,9 +27,9 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
     return admin.database().ref('members/'+snapshot.val().postId).once('value').then(allMembers => {
       if (allMembers.val()) {
         allMembers.forEach(function(childSnapshot) {
-          //if(childSnapshot.key != context.auth.uid) {
+          if(childSnapshot.key != context.auth.uid) {
             members.push(childSnapshot.val().fcm_token)
-          //}
+          }
         })
         console.log(`Array : ${JSON.stringify(members)}`)
 
@@ -58,4 +58,27 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
       console.log('Notifications have been sent.');
       return null;
     });
+  });
+
+  exports.testFunction = functions.https.onRequest((req, res) => {
+    // console.log("Test function called");
+    // res.status(200).send(`{"title" : "test"}`)
+    /*let data = JSON.stringify({
+      message: 'OK',
+    });
+    res.status(200).type('application/json').send(data);*/
+
+    admin.database().ref(`users`).once('value').then(response => {
+      console.log(`Fire ${response.val()}`)
+      console.log(`Fire ${JSON.stringify(response.val())}`)
+      console.log(`Fire ${Object.keys(response.val())}`)
+      console.log(`Fire ${JSON.stringify(Object.keys(response.val()))}`)
+    })
+    
+    res.json({ data: {user: 'tj'} });
+    
+    
+    /*return admin.database().ref('users').once('value').then(response => {
+      res.status(200).send(response)
+    });*/
   });

@@ -82,7 +82,14 @@ class PostDetailsActivity : BaseActivity() {
                 .setQuery(mFirebaseDatabaseReference.child(Constants.COMMENTS_CHILD).child(postItem.id), parser)
                 .build()
 
-        mFirebaseAdapter = PostDetailsAdapter(this, options)
+        mFirebaseAdapter = object : PostDetailsAdapter(this, options) {
+            override fun onDataChanged() {
+                super.onDataChanged()
+                hideProgressDialog()
+            }
+        }
+
+        showProgressDialog()
 
         mFirebaseAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
             override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
@@ -97,7 +104,12 @@ class PostDetailsActivity : BaseActivity() {
         commentsViewContainer.adapter = mFirebaseAdapter
         commentsViewContainer.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         commentsViewContainer.setItemAnimator(DefaultItemAnimator())
+
+
+
     }
+
+
 
     private fun sendComment(postId: String) {
         val mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference()
