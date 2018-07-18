@@ -18,4 +18,6 @@
     <string name="permision_available_read_external_storage">Read external storage permission has been granted. Photo gallery can now be opened.</string>
     <string name="camera_error_message">Camera error. Please, try again.</string>
     <string name="call_test_func">Call test func</string>
+    <string name="register">Register</string>
+    <string name="login">Login</string>
 </resources>

@@ -17,9 +17,15 @@ import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.iid.FirebaseInstanceId
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
 import com.shakuro.firebaseproject.R
 import kotlinx.android.synthetic.main.activity_sign_in.*
 import java.io.IOException
+
+
+
+
 
 
 class SignInActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
@@ -30,6 +36,7 @@ class SignInActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListene
 
     // Firebase instance variables
     private lateinit var mFirebaseAuth: FirebaseAuth
+    private lateinit var mFirebaseRemoteConfig: FirebaseRemoteConfig
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +59,41 @@ class SignInActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListene
 
         // Initialize FirebaseAuth
         mFirebaseAuth = FirebaseAuth.getInstance()
+
+
+        mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+        val firebaseRemoteConfigSettings = FirebaseRemoteConfigSettings.Builder()
+                .setDeveloperModeEnabled(true)
+                .build()
+        val defaultConfigMap: HashMap<String, Any> = HashMap()
+        defaultConfigMap.put("btn_register", getString(R.string.register))
+        defaultConfigMap.put("btn_login", getString(R.string.login))
+
+        // Apply config settings and default values.
+        mFirebaseRemoteConfig.setConfigSettings(firebaseRemoteConfigSettings);
+        mFirebaseRemoteConfig.setDefaults(defaultConfigMap);
+
+        fetchConfig();
+    }
+
+    private fun fetchConfig() {
+        var cacheExpiration: Long = 3600
+        if (mFirebaseRemoteConfig.getInfo().getConfigSettings()
+                        .isDeveloperModeEnabled()) {
+            cacheExpiration = 0;
+        }
+        mFirebaseRemoteConfig.fetch(cacheExpiration)
+                .addOnSuccessListener {
+                    applyConfigValues()
+                }
+                .addOnFailureListener {
+                    applyConfigValues()
+                }
+    }
+
+    private fun applyConfigValues() {
+        registerBtn.setText(mFirebaseRemoteConfig.getString("btn_register"))
+        loginBtn.setText(mFirebaseRemoteConfig.getString("btn_login"))
     }
 
     override fun onClick(v: View?) {
