@@ -84,6 +84,7 @@ class SignInActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListene
         }
         mFirebaseRemoteConfig.fetch(cacheExpiration)
                 .addOnSuccessListener {
+                    mFirebaseRemoteConfig.activateFetched();
                     applyConfigValues()
                 }
                 .addOnFailureListener {
