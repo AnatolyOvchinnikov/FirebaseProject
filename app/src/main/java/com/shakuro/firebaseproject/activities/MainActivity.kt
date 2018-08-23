@@ -202,8 +202,8 @@ class MainActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListener 
     }
 
     private fun callTestFunc() {
-        FirebaseFunctions.getInstance().getHttpsCallable("testFunction")
-                .call()
+        FirebaseFunctions.getInstance().getHttpsCallable("getUsers")
+                .call("{\"name\":\"John\"}")
                 .addOnFailureListener {
                     val a = 10
                     val b = a
