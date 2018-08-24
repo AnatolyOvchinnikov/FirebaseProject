@@ -91,12 +91,16 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
     });
     res.status(200).type('application/json').send(data);*/
 
+    let data = req.body.data;
+    /*console.log(`REQ 1 ${data}`)
+    console.log(`REQ 2 ${JSON.stringify(data)}`)*/
+
     var qqq;
     admin.database().ref(`users`).once('value').then(response => {
-      console.log(`Fire_Users ${response.val()}`)
+      /*console.log(`Fire_Users ${response.val()}`)
       console.log(`Fire_Users ${JSON.stringify(response.val())}`)
       console.log(`Fire_Users ${Object.keys(response.val())}`)
-      console.log(`Fire_Users ${JSON.stringify(Object.keys(response.val()))}`)
+      console.log(`Fire_Users ${JSON.stringify(Object.keys(response.val()))}`)*/
 
       qqq = Object.keys(response.val())
       console.log(`Fire ${qqq}`)
@@ -108,12 +112,7 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
       // res.json({ data: {users: qqq} });
     })
 
-
-    console.log(`request_data_1: ${req}`);
-    console.log(`request_data_1_1: ${JSON.stringify(req)}`);
-    console.log(`request_data_2: ${req.toJSON()}`);
-
-    admin.auth().getUser("9HUcA1boBRaBdlFLEiBYZ9Wkksi1").then(function(userRecord) {
+    admin.auth().getUser(data).then(function(userRecord) {
       // See the UserRecord reference doc for the contents of userRecord.
       console.log("Successfully fetched user data:", userRecord.toJSON());
       res.json({ data: {users: userRecord.toJSON()} });

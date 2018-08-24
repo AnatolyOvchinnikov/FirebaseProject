@@ -203,7 +203,7 @@ class MainActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListener 
 
     private fun callTestFunc() {
         FirebaseFunctions.getInstance().getHttpsCallable("getUsers")
-                .call("{\"name\":\"John\"}")
+                .call(FirebaseAuth.getInstance().currentUser?.uid)
                 .addOnFailureListener {
                     val a = 10
                     val b = a
