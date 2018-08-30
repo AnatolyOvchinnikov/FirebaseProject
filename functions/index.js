@@ -60,71 +60,18 @@ exports.sendNotifications = functions.database.ref('/comments/{postId}/{messageI
     });
   });
 
-  exports.testFunction = functions.https.onRequest((req, res) => {
-    // console.log("Test function called");
-    // res.status(200).send(`{"title" : "test"}`)
-    /*let data = JSON.stringify({
-      message: 'OK',
-    });
-    res.status(200).type('application/json').send(data);*/
-
-    admin.database().ref(`users`).once('value').then(response => {
-      console.log(`Fire ${response.val()}`)
-      console.log(`Fire ${JSON.stringify(response.val())}`)
-      console.log(`Fire ${Object.keys(response.val())}`)
-      console.log(`Fire ${JSON.stringify(Object.keys(response.val()))}`)
-    })
-    
-    res.json({ data: {user: 'tj'} });
-    
-    
-    /*return admin.database().ref('users').once('value').then(response => {
-      res.status(200).send(response)
-    });*/
-  });
-
-  exports.getUsers = functions.https.onRequest((req, res) => {
-    // console.log("Test function called");
-    // res.status(200).send(`{"title" : "test"}`)
-    /*let data = JSON.stringify({
-      message: 'OK',
-    });
-    res.status(200).type('application/json').send(data);*/
-
+  exports.getUserInfo = functions.https.onRequest((req, res) => {
     let data = req.body.data;
-    /*console.log(`REQ 1 ${data}`)
-    console.log(`REQ 2 ${JSON.stringify(data)}`)*/
-
-    var qqq;
-    admin.database().ref(`users`).once('value').then(response => {
-      /*console.log(`Fire_Users ${response.val()}`)
-      console.log(`Fire_Users ${JSON.stringify(response.val())}`)
-      console.log(`Fire_Users ${Object.keys(response.val())}`)
-      console.log(`Fire_Users ${JSON.stringify(Object.keys(response.val()))}`)*/
-
-      qqq = Object.keys(response.val())
-      console.log(`Fire ${qqq}`)
-      /*var a_array = Object.keys(response.val()).val()
-    console.log(`Fire ${a_array}`)
-    var m_array = Array.from(JSON.stringify(Object.keys(response.val())));
-    console.log(`Fire ${m_array}`)*/
-
-      // res.json({ data: {users: qqq} });
-    })
 
     admin.auth().getUser(data).then(function(userRecord) {
-      // See the UserRecord reference doc for the contents of userRecord.
-      console.log("Successfully fetched user data:", userRecord.toJSON());
-      res.json({ data: {users: userRecord.toJSON()} });
+    console.log("Successfully fetched user data:", userRecord.toJSON());
+      res.json({ data: {userInfo: {
+        email: userRecord.email,
+        name: userRecord.displayName,
+        avatar: userRecord.photoURL
+      }} });
     })
     .catch(function(error) {
       console.log("Error fetching user data:", error);
     });
-  
-  
-    
-    
-    /*return admin.database().ref('users').once('value').then(response => {
-      res.status(200).send(response)
-    });*/
   });

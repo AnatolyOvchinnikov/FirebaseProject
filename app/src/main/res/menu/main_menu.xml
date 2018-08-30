@@ -8,7 +8,7 @@
 
     <item
         android:id="@+id/call_test_func"
-        android:title="@string/call_test_func"
+        android:title="@string/get_user_info"
         app:showAsAction="never"/>
 
     <item

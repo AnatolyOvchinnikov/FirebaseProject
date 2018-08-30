@@ -38,6 +38,9 @@ class PostDetailsActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.post_details_layout)
 
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayShowHomeEnabled(true)
+
         val postItem : PostItem = intent.getSerializableExtra(POST_OBJECT) as PostItem
         commentSendBtn.setOnClickListener {
             postItem.id?.let {
@@ -50,6 +53,11 @@ class PostDetailsActivity : BaseActivity() {
         }
 
         initAdapter(postItem)
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed();
+        return true;
     }
 
     public override fun onPause() {

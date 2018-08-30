@@ -1,13 +1,17 @@
 package com.shakuro.firebaseproject.activities
 
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
+import com.bumptech.glide.Glide
 import com.firebase.ui.database.FirebaseRecyclerAdapter
 import com.firebase.ui.database.FirebaseRecyclerOptions
 import com.firebase.ui.database.SnapshotParser
@@ -23,6 +27,7 @@ import com.shakuro.firebaseproject.R
 import com.shakuro.firebaseproject.entity.PostItem
 import com.shakuro.firebaseproject.lists.ChatAdapter
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.user_info_layout.view.*
 import java.util.*
 
 
@@ -142,7 +147,7 @@ class MainActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListener 
                             val iter = (p0?.value as HashMap<Any, Any>).keys
                             tokens.addAll(iter)
                             collection.put(it, iter)
-                            val zzz = collection.mapKeys {
+                            val mapKeys = collection.mapKeys {
                                 it.value.equals("tokenA")
                             }
                             var result: Any? = null
@@ -194,24 +199,50 @@ class MainActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListener 
                 return true
             }
             R.id.call_test_func -> {
-                callTestFunc()
+                getUserInfo()
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
         }
     }
 
-    private fun callTestFunc() {
-        FirebaseFunctions.getInstance().getHttpsCallable("getUsers")
+    private fun getUserInfo() {
+        showProgressDialog()
+        FirebaseFunctions.getInstance().getHttpsCallable("getUserInfo")
                 .call(FirebaseAuth.getInstance().currentUser?.uid)
                 .addOnFailureListener {
-                    val a = 10
-                    val b = a
+                    Log.v(MainActivity.javaClass.simpleName, "Get Users Failed")
+                    hideProgressDialog()
                 }
                 .addOnSuccessListener {
-                    val a = 10
-                    val b = a
+                    if(it.data is HashMap<*, *>) {
+                        val userInfo = (it.data as HashMap<*, *>).get("userInfo") as HashMap<*, *>
+                        displayUserInfoLayout(
+                                userInfo.get("name") as String,
+                                userInfo.get("email") as String,
+                                userInfo.get("avatar") as String)
+                    }
+                    hideProgressDialog()
                 }
+    }
+
+    fun displayUserInfoLayout(username: String, email: String, imgPath: String) {
+        val view = LayoutInflater.from(this).inflate(R.layout.user_info_layout, null, false)
+        view.usernameView.text = username
+        view.emailView.text = email
+
+        Glide.with(this)
+                .load(imgPath)
+                .into(view.userImageView)
+
+        AlertDialog.Builder(this)
+                .setView(view)
+                .setPositiveButton("Ok", object: DialogInterface.OnClickListener {
+                    override fun onClick(p0: DialogInterface?, p1: Int) {
+                        p0?.dismiss()
+                    }
+                })
+                .create().show()
     }
 
     override fun onConnectionFailed(connectionResult: ConnectionResult) {

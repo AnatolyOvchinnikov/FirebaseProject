@@ -23,11 +23,6 @@ import com.shakuro.firebaseproject.R
 import kotlinx.android.synthetic.main.activity_sign_in.*
 import java.io.IOException
 
-
-
-
-
-
 class SignInActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
     private val TAG = "SignInActivity"
     private val RC_SIGN_IN = 9001
